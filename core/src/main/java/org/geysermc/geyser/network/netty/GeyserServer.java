@@ -135,13 +135,9 @@ public final class GeyserServer {
             this.listenCount = 1;
         }
 
-        if (this.geyser.getConfig().getBedrock().isEnableProxyProtocol()) {
-            this.proxiedAddresses = ExpiringMap.builder()
-                    .expiration(30 + 1, TimeUnit.MINUTES)
-                    .expirationPolicy(ExpirationPolicy.ACCESSED).build();
-        } else {
-            this.proxiedAddresses = null;
-        }
+        this.proxiedAddresses = ExpiringMap.builder()
+                .expiration(30 + 1, TimeUnit.MINUTES)
+                .expirationPolicy(ExpirationPolicy.ACCESSED).build();
 
         // It's set to 0 only if no system property or manual config value was set
         if (geyser.getConfig().getBedrock().broadcastPort() == 0) {
@@ -155,14 +151,14 @@ public final class GeyserServer {
         bootstrapFutures = new ChannelFuture[listenCount];
         for (int i = 0; i < listenCount; i++) {
             ChannelFuture future = bootstrap.bind(address);
-            modifyHandlers(future);
+            modifyHandlers(future, address);
             bootstrapFutures[i] = future;
         }
 
         return Bootstraps.allOf(bootstrapFutures);
     }
 
-    private void modifyHandlers(ChannelFuture future) {
+    private void modifyHandlers(ChannelFuture future, InetSocketAddress address) {
         Channel channel = future.channel();
         // Add our ping handler
         channel.pipeline()
@@ -170,7 +166,7 @@ public final class GeyserServer {
                 .addAfter(RakServerOfflineHandler.NAME, RakPingHandler.NAME, new RakPingHandler(this));
 
         // Add proxy handler
-        boolean isProxyProtocol = this.geyser.getConfig().getBedrock().isEnableProxyProtocol();
+        boolean isProxyProtocol = this.geyser.getConfig().getBedrock().isEnableProxyProtocol(address);
         if (isProxyProtocol) {
             channel.pipeline().addFirst("proxy-protocol-decoder", new ProxyServerHandler());
         }
@@ -244,7 +240,7 @@ public final class GeyserServer {
 
     public boolean onConnectionRequest(InetSocketAddress inetSocketAddress) {
         List<String> allowedProxyIPs = geyser.getConfig().getBedrock().getProxyProtocolWhitelistedIPs();
-        if (geyser.getConfig().getBedrock().isEnableProxyProtocol() && !allowedProxyIPs.isEmpty()) {
+        if (geyser.getConfig().getBedrock().isEnableProxyProtocol(inetSocketAddress) && !allowedProxyIPs.isEmpty()) {
             boolean isWhitelistedIP = false;
             for (CIDRMatcher matcher : geyser.getConfig().getBedrock().getWhitelistedIPsMatchers()) {
                 if (matcher.matches(inetSocketAddress.getAddress())) {
@@ -261,7 +257,7 @@ public final class GeyserServer {
 
         String ip;
         if (geyser.getConfig().isLogPlayerIpAddresses()) {
-            if (geyser.getConfig().getBedrock().isEnableProxyProtocol()) {
+            if (geyser.getConfig().getBedrock().isEnableProxyProtocol(inetSocketAddress)) {
                 ip = this.proxiedAddresses.getOrDefault(inetSocketAddress, inetSocketAddress).toString();
             } else {
                 ip = inetSocketAddress.toString();
@@ -271,7 +267,7 @@ public final class GeyserServer {
         }
 
         ConnectionRequestEvent requestEvent = new ConnectionRequestEvent(
-            inetSocketAddress, 
+            inetSocketAddress,
             this.proxiedAddresses != null ? this.proxiedAddresses.get(inetSocketAddress) : null
         );
         geyser.eventBus().fire(requestEvent);
@@ -290,7 +286,7 @@ public final class GeyserServer {
         if (geyser.getConfig().isDebugMode() && PRINT_DEBUG_PINGS) {
             String ip;
             if (geyser.getConfig().isLogPlayerIpAddresses()) {
-                if (geyser.getConfig().getBedrock().isEnableProxyProtocol()) {
+                if (geyser.getConfig().getBedrock().isEnableProxyProtocol(inetSocketAddress)) {
                     ip = this.proxiedAddresses.getOrDefault(inetSocketAddress, inetSocketAddress).toString();
                 } else {
                     ip = inetSocketAddress.toString();
