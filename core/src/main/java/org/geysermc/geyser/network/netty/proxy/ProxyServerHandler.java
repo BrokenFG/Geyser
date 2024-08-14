@@ -73,6 +73,13 @@ public class ProxyServerHandler extends SimpleChannelInboundHandler<DatagramPack
             presentAddress = new InetSocketAddress(decoded.sourceAddress(), decoded.sourcePort());
             log.debug("Got PROXY header: (from {}) {}", packet.sender(), presentAddress);
             GeyserImpl.getInstance().getGeyserServer().getProxiedAddresses().put(packet.sender(), presentAddress);
+            try {
+                Class.forName("net.md_5.bungee.netty.PipelineUtils")
+                    .getDeclaredMethod("addGeyserAddress", InetSocketAddress.class)
+                    .invoke(null, packet.sender());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         } else {
             log.trace("Reusing PROXY header: (from {}) {}", packet.sender(), presentAddress);
         }
