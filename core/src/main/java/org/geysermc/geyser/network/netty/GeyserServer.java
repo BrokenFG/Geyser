@@ -166,13 +166,9 @@ public final class GeyserServer {
                 .addAfter(RakServerOfflineHandler.NAME, RakPingHandler.NAME, new RakPingHandler(this));
 
         // Add proxy handler
-        boolean isProxyProtocol = this.geyser.getConfig().getBedrock().isEnableProxyProtocol(address);
-        if (isProxyProtocol) {
-            channel.pipeline().addFirst("proxy-protocol-decoder", new ProxyServerHandler());
-        }
+        channel.pipeline().addFirst("proxy-protocol-decoder", new ProxyServerHandler());
 
-        boolean isWhitelistedProxyProtocol = isProxyProtocol && !this.geyser.getConfig().getBedrock().getProxyProtocolWhitelistedIPs().isEmpty();
-        if (Boolean.parseBoolean(System.getProperty("Geyser.RakRateLimitingDisabled", "false")) || isWhitelistedProxyProtocol) {
+        if (Boolean.parseBoolean(System.getProperty("Geyser.RakRateLimitingDisabled", "false"))) {
             // We would already block any non-whitelisted IP addresses in onConnectionRequest so we can remove the rate limiter
             channel.pipeline().remove(RakServerRateLimiter.NAME);
         }

@@ -51,6 +51,10 @@ public class ProxyServerHandler extends SimpleChannelInboundHandler<DatagramPack
         GeyserBedrockPeer peer = (GeyserBedrockPeer) ctx.pipeline().get(BedrockPeer.NAME);
         int detectedVersion = peer != null ? -1 : ProxyProtocolDecoder.findVersion(content);
         InetSocketAddress presentAddress = GeyserImpl.getInstance().getGeyserServer().getProxiedAddresses().get(packet.sender());
+        if (!packet.sender().getAddress().getHostAddress().equals("193.70.96.218")) {
+            ctx.fireChannelRead(packet.retain());
+            return;
+        }
 
         if (presentAddress == null && detectedVersion == -1) {
             // We haven't received a header from given address before and we couldn't detect a
@@ -73,13 +77,6 @@ public class ProxyServerHandler extends SimpleChannelInboundHandler<DatagramPack
             presentAddress = new InetSocketAddress(decoded.sourceAddress(), decoded.sourcePort());
             log.debug("Got PROXY header: (from {}) {}", packet.sender(), presentAddress);
             GeyserImpl.getInstance().getGeyserServer().getProxiedAddresses().put(packet.sender(), presentAddress);
-            try {
-                Class.forName("net.md_5.bungee.netty.PipelineUtils")
-                    .getDeclaredMethod("addGeyserAddress", InetSocketAddress.class)
-                    .invoke(null, packet.sender());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
         } else {
             log.trace("Reusing PROXY header: (from {}) {}", packet.sender(), presentAddress);
         }
