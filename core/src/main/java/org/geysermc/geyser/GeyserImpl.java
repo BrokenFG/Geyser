@@ -297,7 +297,7 @@ public class GeyserImpl implements GeyserApi, EventRegistrar {
 
         SkinProvider.registerCacheImageTask(this);
 
-        Registries.RESOURCE_PACKS.load();
+        Registries.resourcePacks().load();
 
         String geyserUdpPort = System.getProperty("geyserUdpPort", "");
         String pluginUdpPort = geyserUdpPort.isEmpty() ? System.getProperty("pluginUdpPort", "") : geyserUdpPort;
@@ -723,8 +723,8 @@ public class GeyserImpl implements GeyserApi, EventRegistrar {
         runIfNonNull(newsHandler, NewsHandler::shutdown);
         runIfNonNull(erosionUnixListener, UnixSocketClientListener::close);
 
-        if (Registries.RESOURCE_PACKS.loaded()) {
-            Registries.RESOURCE_PACKS.get().clear();
+        if (Registries.resourcePacks().loaded()) {
+            Registries.resourcePacks().get().clear();
         }
 
         this.setEnabled(false);
@@ -783,7 +783,7 @@ public class GeyserImpl implements GeyserApi, EventRegistrar {
     @Override
     @SuppressWarnings("unchecked")
     public <R extends T, T> @NonNull R provider(@NonNull Class<T> apiClass, @Nullable Object... args) {
-        ProviderSupplier provider = Registries.PROVIDERS.get(apiClass);
+        ProviderSupplier provider = Registries.providers().get(apiClass);
         if (provider == null) {
             throw new IllegalArgumentException("No provider found for " + apiClass);
         }

@@ -25,6 +25,12 @@
 
 package org.geysermc.geyser.util;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+import java.util.function.IntFunction;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.cloudburstmc.math.vector.Vector3i;
 import org.cloudburstmc.nbt.NbtMap;
@@ -65,13 +71,6 @@ import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.inventory.S
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.inventory.ServerboundPickItemPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.inventory.ServerboundSetCreativeModeSlotPacket;
 import org.jetbrains.annotations.Contract;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
-import java.util.function.IntFunction;
 
 public class InventoryUtils {
     /**
@@ -239,7 +238,7 @@ public class InventoryUtils {
     }
 
     private static ItemDefinition getUnusableSpaceBlockDefinition(int protocolVersion) {
-        ItemMappings mappings = Registries.ITEMS.forVersion(protocolVersion);
+        ItemMappings mappings = Registries.items().forVersion(protocolVersion);
         String unusableSpaceBlock = GeyserImpl.getInstance().getConfig().getUnusableSpaceBlock();
         ItemDefinition itemDefinition = mappings.getDefinition(unusableSpaceBlock);
 
@@ -253,13 +252,13 @@ public class InventoryUtils {
 
     public static IntFunction<ItemData> getUpgradeTemplate() {
         return protocolVersion -> ItemData.builder()
-                .definition(Registries.ITEMS.forVersion(protocolVersion).getStoredItems().upgradeTemplate().getBedrockDefinition())
+                .definition(Registries.items().forVersion(protocolVersion).getStoredItems().upgradeTemplate().getBedrockDefinition())
                 .count(1).build();
     }
 
     public static IntFunction<ItemData> getTotemOfUndying() {
         return protocolVersion -> ItemData.builder()
-            .definition(Registries.ITEMS.forVersion(protocolVersion).getStoredItems().totem().getBedrockDefinition())
+            .definition(Registries.items().forVersion(protocolVersion).getStoredItems().totem().getBedrockDefinition())
             .count(1).build();
     }
 
@@ -318,7 +317,7 @@ public class InventoryUtils {
 
     // Please remove!!!
     public static void findOrCreateItem(GeyserSession session, String itemName) {
-        findOrCreateItem(session, Registries.JAVA_ITEM_IDENTIFIERS.getOrDefault(itemName, Items.AIR));
+        findOrCreateItem(session, Registries.javaItemIdentifiers().getOrDefault(itemName, Items.AIR));
     }
 
     /**
