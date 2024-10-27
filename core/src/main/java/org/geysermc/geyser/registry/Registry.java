@@ -98,7 +98,6 @@ public abstract class Registry<M> implements IRegistry<M> {
      */
     @Override
     public M get() {
-        if (this.mappings == null) load();
         return this.mappings;
     }
 
