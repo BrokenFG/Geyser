@@ -33,6 +33,9 @@ import static org.geysermc.geyser.scoreboard.network.util.GeyserMockContextScore
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.EnumSet;
+import java.util.Optional;
+import java.util.UUID;
 import net.kyori.adventure.text.Component;
 import org.cloudburstmc.protocol.bedrock.data.entity.EntityDataTypes;
 import org.cloudburstmc.protocol.bedrock.packet.AddEntityPacket;
@@ -70,10 +73,6 @@ import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.spaw
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.spawn.ClientboundAddExperienceOrbPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.scoreboard.ClientboundSetPlayerTeamPacket;
 import org.junit.jupiter.api.Test;
-
-import java.util.EnumSet;
-import java.util.Optional;
-import java.util.UUID;
 
 /**
  * Tests for issues reported on GitHub.
@@ -214,7 +213,7 @@ public class ScoreboardIssueTests {
                 assertEquals("minecraft:armor_stand", packet.getIdentifier());
             });
 
-            // metadata set: invisible, custom name, custom name visible
+            // invisible, custom name, custom name visible
             context.translate(setEntityDataTranslator, new ClientboundSetEntityDataPacket(1298, new EntityMetadata[]{
                 new ByteEntityMetadata(0, MetadataType.BYTE, (byte) 0x20),
                 new ObjectEntityMetadata<>(2, MetadataType.OPTIONAL_CHAT, Optional.of(Component.text("tesss"))),
