@@ -108,7 +108,7 @@ public class ItemRegistryPopulator {
         GeyserMappingItem remap(Item item, GeyserMappingItem mapping);
     }
 
-    public static void populate() {
+    public static void populate(CommonRegistries registries) {
         List<PaletteVersion> paletteVersions = new ArrayList<>(3);
         paletteVersions.add(new PaletteVersion("1_20_80", Bedrock_v671.CODEC.getProtocolVersion(), Collections.emptyMap(), Conversion685_671::remapItem));
         paletteVersions.add(new PaletteVersion("1_21_0", Bedrock_v685.CODEC.getProtocolVersion(), Collections.emptyMap(), Conversion712_685::remapItem));
@@ -244,7 +244,7 @@ public class ItemRegistryPopulator {
             Set<String> registeredItemNames = new ObjectOpenHashSet<>(); // This is used to check for duplicate item names
 
             for (Map.Entry<String, GeyserMappingItem> entry : items.entrySet()) {
-                Item javaItem = Registries.JAVA_ITEM_IDENTIFIERS.get(entry.getKey());
+                Item javaItem = registries.javaItemIdentifiers().get(entry.getKey());
                 if (javaItem == null) {
                     throw new RuntimeException("Extra item in mappings? " + entry.getKey());
                 }
@@ -645,7 +645,7 @@ public class ItemRegistryPopulator {
                     .customBlockItemDefinitions(customBlockItemDefinitions)
                     .build();
 
-            Registries.ITEMS.register(palette.protocolVersion(), itemMappings);
+            registries.items().register(palette.protocolVersion(), itemMappings);
 
             firstMappingsPass = false;
         }
