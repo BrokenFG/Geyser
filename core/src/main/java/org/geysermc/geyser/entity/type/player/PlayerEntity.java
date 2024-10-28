@@ -43,6 +43,7 @@ import org.cloudburstmc.protocol.bedrock.data.AbilityLayer;
 import org.cloudburstmc.protocol.bedrock.data.GameType;
 import org.cloudburstmc.protocol.bedrock.data.PlayerPermission;
 import org.cloudburstmc.protocol.bedrock.data.command.CommandPermission;
+import org.cloudburstmc.protocol.bedrock.data.entity.EntityDataMap;
 import org.cloudburstmc.protocol.bedrock.data.entity.EntityDataTypes;
 import org.cloudburstmc.protocol.bedrock.data.entity.EntityFlag;
 import org.cloudburstmc.protocol.bedrock.data.entity.EntityLinkData;
@@ -109,6 +110,20 @@ public class PlayerEntity extends LivingEntity implements GeyserPlayerEntity {
         this.username = username;
         this.nametag = username;
         this.texturesProperty = texturesProperty;
+    }
+
+    /**
+     * Do not use! For testing purposes only
+     */
+    public PlayerEntity(GeyserSession session, long geyserId, UUID uuid, String username) {
+        super(session, -1, geyserId, uuid, EntityDefinitions.PLAYER, Vector3f.ZERO, Vector3f.ZERO, 0, 0, 0);
+        this.username = username;
+        this.nametag = username;
+        this.texturesProperty = null;
+
+        // clear initial metadata
+        dirtyMetadata.apply(new EntityDataMap());
+        setFlagsDirty(false);
     }
 
     @Override
@@ -178,7 +193,11 @@ public class PlayerEntity extends LivingEntity implements GeyserPlayerEntity {
         if (session.getEntityCache().getPlayerEntity(uuid) == null)
             return;
 
-        session.getEntityCache().spawnEntity(this);
+        if (session.getEntityCache().getEntityByGeyserId(geyserId) == null) {
+            session.getEntityCache().spawnEntity(this);
+        } else {
+            spawnEntity();
+        }
     }
 
     @Override

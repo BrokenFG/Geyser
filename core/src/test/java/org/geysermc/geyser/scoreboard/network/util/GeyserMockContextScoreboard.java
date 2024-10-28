@@ -34,7 +34,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.UUID;
 import java.util.function.Consumer;
-import org.cloudburstmc.math.vector.Vector3f;
 import org.cloudburstmc.protocol.bedrock.packet.BedrockPacket;
 import org.geysermc.geyser.GeyserImpl;
 import org.geysermc.geyser.entity.type.player.PlayerEntity;
@@ -84,7 +83,7 @@ public class GeyserMockContextScoreboard {
     }
 
     public static PlayerEntity mockAndAddPlayerEntity(GeyserMockContext context, String username, long geyserId) {
-        var playerEntity = spy(new PlayerEntity(context.session(), (int) geyserId, geyserId, UUID.randomUUID(), Vector3f.ZERO, Vector3f.ZERO, 0, 0, 0, username, null));
+        var playerEntity = spy(new PlayerEntity(context.session(), geyserId, UUID.randomUUID(), username));
         // fake the player being spawned
         when(playerEntity.isValid()).thenReturn(true);
 

@@ -32,6 +32,7 @@ import static org.geysermc.geyser.scoreboard.network.util.GeyserMockContextScore
 import java.util.List;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.cloudburstmc.protocol.bedrock.data.ScoreInfo;
 import org.cloudburstmc.protocol.bedrock.packet.RemoveObjectivePacket;
@@ -74,7 +75,7 @@ public class BasicPlayerlistScoreboardTests {
                 setDisplayObjectiveTranslator,
                 new ClientboundSetDisplayObjectivePacket(ScoreboardPosition.PLAYER_LIST, "objective")
             );
-            assertNextPacket(context, () -> {
+            assertNextPacket(() -> {
                 var packet = new SetDisplayObjectivePacket();
                 packet.setObjectiveId("0");
                 packet.setDisplayName("objective");
@@ -82,7 +83,7 @@ public class BasicPlayerlistScoreboardTests {
                 packet.setDisplaySlot("list");
                 packet.setSortOrder(1);
                 return packet;
-            });
+            }, context);
         });
     }
 
@@ -97,7 +98,7 @@ public class BasicPlayerlistScoreboardTests {
                 new ClientboundSetObjectivePacket(
                     "objective",
                     ObjectiveAction.ADD,
-                    Component.text("objective", NamedTextColor.AQUA, TextDecoration.BOLD),
+                    Component.text("objective", Style.style(NamedTextColor.AQUA, TextDecoration.BOLD)),
                     ScoreType.INTEGER,
                     null
                 )
@@ -108,7 +109,7 @@ public class BasicPlayerlistScoreboardTests {
                 setDisplayObjectiveTranslator,
                 new ClientboundSetDisplayObjectivePacket(ScoreboardPosition.PLAYER_LIST, "objective")
             );
-            assertNextPacket(context, () -> {
+            assertNextPacket(() -> {
                 var packet = new SetDisplayObjectivePacket();
                 packet.setObjectiveId("0");
                 packet.setDisplayName("§b§lobjective");
@@ -116,7 +117,7 @@ public class BasicPlayerlistScoreboardTests {
                 packet.setDisplaySlot("list");
                 packet.setSortOrder(1);
                 return packet;
-            });
+            }, context);
         });
     }
 
@@ -155,7 +156,7 @@ public class BasicPlayerlistScoreboardTests {
                 setDisplayObjectiveTranslator,
                 new ClientboundSetDisplayObjectivePacket(ScoreboardPosition.PLAYER_LIST, "objective2")
             );
-            assertNextPacket(context, () -> {
+            assertNextPacket(() -> {
                 var packet = new SetDisplayObjectivePacket();
                 packet.setObjectiveId("0");
                 packet.setDisplayName("objective2");
@@ -163,26 +164,26 @@ public class BasicPlayerlistScoreboardTests {
                 packet.setDisplaySlot("list");
                 packet.setSortOrder(1);
                 return packet;
-            });
-            assertNextPacket(context, () -> {
+            }, context);
+            assertNextPacket(() -> {
                 var packet = new SetScorePacket();
                 packet.setAction(SetScorePacket.Action.SET);
                 // session player name is Tim203
                 packet.setInfos(List.of(new ScoreInfo(1, "0", 2, ScoreInfo.ScorerType.PLAYER, 1)));
                 return packet;
-            });
+            }, context);
             assertNoNextPacket(context);
 
             context.translate(
                 setDisplayObjectiveTranslator,
                 new ClientboundSetDisplayObjectivePacket(ScoreboardPosition.PLAYER_LIST, "objective1")
             );
-            assertNextPacket(context, () -> {
+            assertNextPacket(() -> {
                 var packet = new RemoveObjectivePacket();
                 packet.setObjectiveId("0");
                 return packet;
-            });
-            assertNextPacket(context, () -> {
+            }, context);
+            assertNextPacket(() -> {
                 var packet = new SetDisplayObjectivePacket();
                 packet.setObjectiveId("2");
                 packet.setDisplayName("objective1");
@@ -190,14 +191,14 @@ public class BasicPlayerlistScoreboardTests {
                 packet.setDisplaySlot("list");
                 packet.setSortOrder(1);
                 return packet;
-            });
-            assertNextPacket(context, () -> {
+            }, context);
+            assertNextPacket(() -> {
                 var packet = new SetScorePacket();
                 packet.setAction(SetScorePacket.Action.SET);
                 // session player name is Tim203
                 packet.setInfos(List.of(new ScoreInfo(3, "2", 1, ScoreInfo.ScorerType.PLAYER, 1)));
                 return packet;
-            });
+            }, context);
         });
     }
 }

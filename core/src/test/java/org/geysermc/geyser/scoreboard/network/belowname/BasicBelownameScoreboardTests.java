@@ -98,12 +98,12 @@ public class BasicBelownameScoreboardTests {
                 setDisplayObjectiveTranslator,
                 new ClientboundSetDisplayObjectivePacket(ScoreboardPosition.BELOW_NAME, "objective")
             );
-            assertNextPacket(context, () -> {
+            assertNextPacket(() -> {
                 var packet = new SetEntityDataPacket();
                 packet.setRuntimeEntityId(2);
                 packet.getMetadata().put(EntityDataTypes.SCORE, "0 §r§9objective");
                 return packet;
-            });
+            }, context);
         });
     }
 
@@ -131,24 +131,24 @@ public class BasicBelownameScoreboardTests {
                 setDisplayObjectiveTranslator,
                 new ClientboundSetDisplayObjectivePacket(ScoreboardPosition.BELOW_NAME, "objective")
             );
-            assertNextPacket(context, () -> {
+            assertNextPacket(() -> {
                 var packet = new SetEntityDataPacket();
                 packet.setRuntimeEntityId(2);
                 packet.getMetadata().put(EntityDataTypes.SCORE, "0 §robjective");
                 return packet;
-            });
+            }, context);
             assertNoNextPacket(context);
 
             context.translate(
                 setDisplayObjectiveTranslator,
                 new ClientboundSetDisplayObjectivePacket(ScoreboardPosition.BELOW_NAME, "")
             );
-            assertNextPacket(context, () -> {
+            assertNextPacket(() -> {
                 var packet = new SetEntityDataPacket();
                 packet.setRuntimeEntityId(2);
                 packet.getMetadata().put(EntityDataTypes.SCORE, "");
                 return packet;
-            });
+            }, context);
         });
     }
 
@@ -186,42 +186,42 @@ public class BasicBelownameScoreboardTests {
                 setDisplayObjectiveTranslator,
                 new ClientboundSetDisplayObjectivePacket(ScoreboardPosition.BELOW_NAME, "objective2")
             );
-            assertNextPacket(context, () -> {
+            assertNextPacket(() -> {
                 var packet = new SetEntityDataPacket();
                 packet.setRuntimeEntityId(2);
                 packet.getMetadata().put(EntityDataTypes.SCORE, "0 §robjective2");
                 return packet;
-            });
+            }, context);
             assertNoNextPacket(context);
 
             context.translate(
                 setDisplayObjectiveTranslator,
                 new ClientboundSetDisplayObjectivePacket(ScoreboardPosition.BELOW_NAME, "objective1")
             );
-            assertNextPacket(context, () -> {
+            assertNextPacket(() -> {
                 var packet = new SetEntityDataPacket();
                 packet.setRuntimeEntityId(2);
                 packet.getMetadata().put(EntityDataTypes.SCORE, "");
                 return packet;
-            });
-            assertNextPacket(context, () -> {
+            }, context);
+            assertNextPacket(() -> {
                 var packet = new SetEntityDataPacket();
                 packet.setRuntimeEntityId(2);
                 packet.getMetadata().put(EntityDataTypes.SCORE, "0 §robjective1");
                 return packet;
-            });
+            }, context);
             assertNoNextPacket(context);
 
             context.translate(
                 setDisplayObjectiveTranslator,
                 new ClientboundSetDisplayObjectivePacket(ScoreboardPosition.BELOW_NAME, "")
             );
-            assertNextPacket(context, () -> {
+            assertNextPacket(() -> {
                 var packet = new SetEntityDataPacket();
                 packet.setRuntimeEntityId(2);
                 packet.getMetadata().put(EntityDataTypes.SCORE, "");
                 return packet;
-            });
+            }, context);
         });
     }
 }

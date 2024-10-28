@@ -25,11 +25,8 @@
 
 package org.geysermc.geyser.entity.type.living;
 
-import java.util.Optional;
-import java.util.UUID;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.cloudburstmc.math.vector.Vector3f;
 import org.cloudburstmc.protocol.bedrock.data.entity.EntityDataType;
 import org.cloudburstmc.protocol.bedrock.data.entity.EntityDataTypes;
@@ -39,7 +36,6 @@ import org.geysermc.geyser.entity.EntityDefinition;
 import org.geysermc.geyser.entity.EntityDefinitions;
 import org.geysermc.geyser.entity.type.LivingEntity;
 import org.geysermc.geyser.item.Items;
-import org.geysermc.geyser.scoreboard.Team;
 import org.geysermc.geyser.session.GeyserSession;
 import org.geysermc.geyser.util.InteractionResult;
 import org.geysermc.geyser.util.MathUtils;
@@ -48,6 +44,9 @@ import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.type.Boolea
 import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.type.ByteEntityMetadata;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.player.Hand;
 import org.geysermc.mcprotocollib.protocol.data.game.item.ItemStack;
+
+import java.util.Optional;
+import java.util.UUID;
 
 public class ArmorStandEntity extends LivingEntity {
 
@@ -122,12 +121,6 @@ public class ArmorStandEntity extends LivingEntity {
         float yOffset = getYOffset();
         super.moveAbsolute(yOffset != 0 ? position.up(yOffset) : position , yaw, yaw, yaw, isOnGround, teleported);
         this.position = position;
-    }
-
-    @Override
-    public void updateNametag(@Nullable Team team) {
-        // unlike all other LivingEntities, armor stands are not affected by team nametag visibility
-        super.updateNametag(team, true);
     }
 
     @Override
