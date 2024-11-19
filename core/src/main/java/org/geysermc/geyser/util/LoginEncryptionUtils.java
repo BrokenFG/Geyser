@@ -114,8 +114,11 @@ public class LoginEncryptionUtils {
     private static String generateUUID(String displayName) {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         byte[] hashBytes = md.digest(displayName.getBytes(StandardCharsets.UTF_8));
-        BigInteger uniqueNumber = new BigInteger(1, hashBytes);
-        return uniqueNumber.toString();
+        int uniqueInt = ((hashBytes[0] & 0xFF) << 24)
+            | ((hashBytes[1] & 0xFF) << 16)
+            | ((hashBytes[2] & 0xFF) << 8)
+            | (hashBytes[3] & 0xFF);
+        return String.valueOf(uniqueInt);
     }
 
     private static void startEncryptionHandshake(GeyserSession session, PublicKey key) throws Exception {
