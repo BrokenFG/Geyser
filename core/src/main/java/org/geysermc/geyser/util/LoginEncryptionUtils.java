@@ -73,7 +73,7 @@ public class LoginEncryptionUtils {
                 session.disconnect(GeyserLocale.getLocaleStringLog("geyser.network.remote.invalid_xbox_account"));
                 return;
             }*/
-
+            System.out.println(result.rawIdentityClaims());
             IdentityData extraData = result.identityClaims().extraData;
             session.setAuthenticationData(new AuthData(extraData.displayName, extraData.identity, extraData.xuid));
             session.setCertChainData(certChainData);
