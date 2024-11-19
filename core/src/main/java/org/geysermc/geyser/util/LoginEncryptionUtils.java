@@ -28,6 +28,7 @@ package org.geysermc.geyser.util;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.SneakyThrows;
 import net.raphimc.minecraftauth.step.msa.StepMsaDeviceCode;
 import org.cloudburstmc.protocol.bedrock.packet.LoginPacket;
 import org.cloudburstmc.protocol.bedrock.packet.ServerToClientHandshakePacket;
@@ -47,7 +48,10 @@ import org.geysermc.geyser.text.ChatColor;
 import org.geysermc.geyser.text.GeyserLocale;
 
 import javax.crypto.SecretKey;
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
+import java.security.MessageDigest;
 import java.security.PublicKey;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -74,7 +78,7 @@ public class LoginEncryptionUtils {
                 return;
             }*/
             IdentityData extraData = result.identityClaims().extraData;
-            session.setAuthenticationData(new AuthData(extraData.displayName, extraData.identity, result.signed() ? extraData.xuid : "123456"));
+            session.setAuthenticationData(new AuthData(extraData.displayName, extraData.identity, result.signed() ? extraData.xuid : generateUUID(extraData.displayName)));
             session.setCertChainData(certChainData);
 
             PublicKey identityPublicKey = result.identityClaims().parsedIdentityPublicKey();
@@ -87,6 +91,7 @@ public class LoginEncryptionUtils {
             JsonNode clientDataJson = JSON_MAPPER.readTree(clientDataPayload);
             BedrockClientData data = JSON_MAPPER.convertValue(clientDataJson, BedrockClientData.class);
             data.setOriginalString(clientData);
+            data.setLicense(result.signed());
             session.setClientData(data);
 
             try {
@@ -103,6 +108,14 @@ public class LoginEncryptionUtils {
             session.disconnect("disconnectionScreen.internalError.cantConnect");
             throw new RuntimeException("Unable to complete login", ex);
         }
+    }
+
+    @SneakyThrows
+    private static String generateUUID(String displayName) {
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        byte[] hashBytes = md.digest(displayName.getBytes(StandardCharsets.UTF_8));
+        BigInteger uniqueNumber = new BigInteger(1, hashBytes);
+        return uniqueNumber.toString();
     }
 
     private static void startEncryptionHandshake(GeyserSession session, PublicKey key) throws Exception {

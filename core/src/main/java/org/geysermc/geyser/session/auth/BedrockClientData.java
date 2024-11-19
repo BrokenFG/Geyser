@@ -108,6 +108,9 @@ public final class BedrockClientData {
     private boolean thirdPartyNameOnly;
     @JsonProperty(value = "PlayFabId")
     private String playFabId;
+    @JsonIgnore
+    @Setter
+    private boolean license;
 
     @JsonIgnore
     @Setter
