@@ -30,6 +30,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.cloudburstmc.math.vector.Vector3f;
 import org.cloudburstmc.protocol.bedrock.data.entity.EntityDataTypes;
 import org.cloudburstmc.protocol.bedrock.data.entity.EntityFlag;
+import org.cloudburstmc.protocol.bedrock.packet.AddEntityPacket;
 import org.cloudburstmc.protocol.bedrock.packet.UpdateAttributesPacket;
 import org.geysermc.geyser.entity.EntityDefinition;
 import org.geysermc.geyser.inventory.GeyserItemStack;
@@ -51,7 +52,7 @@ import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.type.Object
 import org.geysermc.mcprotocollib.protocol.data.game.entity.player.GameMode;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.player.Hand;
 import org.geysermc.mcprotocollib.protocol.data.game.item.ItemStack;
-import org.geysermc.mcprotocollib.protocol.data.game.item.component.DataComponentType;
+import org.geysermc.mcprotocollib.protocol.data.game.item.component.DataComponentTypes;
 import org.geysermc.mcprotocollib.protocol.data.game.item.component.HolderSet;
 
 import java.util.Collections;
@@ -65,6 +66,12 @@ public class WolfEntity extends TameableEntity {
 
     public WolfEntity(GeyserSession session, int entityId, long geyserId, UUID uuid, EntityDefinition<?> definition, Vector3f position, Vector3f motion, float yaw, float pitch, float headYaw) {
         super(session, entityId, geyserId, uuid, definition, position, motion, yaw, pitch, headYaw);
+    }
+
+    @Override
+    public void addAdditionalSpawnData(AddEntityPacket addEntityPacket) {
+        propertyManager.add("minecraft:sound_variant", "default");
+        propertyManager.applyIntProperties(addEntityPacket.getProperties().getIntProperties());
     }
 
     @Override
@@ -129,7 +136,7 @@ public class WolfEntity extends TameableEntity {
         super.setBody(stack);
         isCurseOfBinding = ItemUtils.hasEffect(session, stack, EnchantmentComponent.PREVENT_ARMOR_CHANGE);
         // Not using ItemStack#getDataComponents as that wouldn't include default item components
-        repairableItems = GeyserItemStack.from(stack).getComponent(DataComponentType.REPAIRABLE);
+        repairableItems = GeyserItemStack.from(stack).getComponent(DataComponentTypes.REPAIRABLE);
     }
 
     @Override

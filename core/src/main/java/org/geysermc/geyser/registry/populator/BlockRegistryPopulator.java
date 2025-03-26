@@ -45,6 +45,7 @@ import org.cloudburstmc.nbt.NbtUtils;
 import org.cloudburstmc.protocol.bedrock.codec.v748.Bedrock_v748;
 import org.cloudburstmc.protocol.bedrock.codec.v766.Bedrock_v766;
 import org.cloudburstmc.protocol.bedrock.codec.v776.Bedrock_v776;
+import org.cloudburstmc.protocol.bedrock.codec.v786.Bedrock_v786;
 import org.cloudburstmc.protocol.bedrock.data.BlockPropertyData;
 import org.cloudburstmc.protocol.bedrock.data.definitions.BlockDefinition;
 import org.geysermc.geyser.GeyserImpl;
@@ -117,41 +118,10 @@ public final class BlockRegistryPopulator {
     private static void registerBedrockBlocks() {
         var blockMappers = ImmutableMap.<ObjectIntPair<String>, Remapper>builder()
                 .put(ObjectIntPair.of("1_21_40", Bedrock_v748.CODEC.getProtocolVersion()), Conversion766_748::remapBlock)
-                .put(ObjectIntPair.of("1_21_50", Bedrock_v766.CODEC.getProtocolVersion()), tag -> tag) // TODO: Finish me
-                .put(ObjectIntPair.of("1_21_60", Bedrock_v776.CODEC.getProtocolVersion()), tag -> {
-                    final String name = tag.getString("name");
-                    if (name.equals("minecraft:creaking_heart") && tag.getCompound("states").containsKey("active")) {
-                        NbtMapBuilder builder = tag.getCompound("states").toBuilder();
-                        builder.remove("active");
-                        builder.putString("creaking_heart_state", "awake");
-                        NbtMap states = builder.build();
-                        return tag.toBuilder().putCompound("states", states).build();
-                    }
-                    if ((name.endsWith("_door") || name.endsWith("fence_gate")) && tag.getCompound("states").containsKey("direction")) {
-                        NbtMapBuilder builder = tag.getCompound("states").toBuilder();
-                        Integer directionCardinality = (Integer) builder.remove("direction");
-                        switch (directionCardinality) {
-                            case 0:
-                                builder.putString("minecraft:cardinal_direction", "south");
-                                break;
-                            case 1:
-                                builder.putString("minecraft:cardinal_direction", "west");
-                                break;
-                            case 2:
-                                builder.putString( "minecraft:cardinal_direction" , "north");
-                                break;
-                            case 3:
-                                builder.putString("minecraft:cardinal_direction", "east");
-                                break;
-                            default:
-                                throw new AssertionError("Invalid direction: " + directionCardinality);
-                        }
-                        NbtMap states = builder.build();
-                        return tag.toBuilder().putCompound("states", states).build();
-                    }
-                    return tag;
-                })
-                .build();
+                .put(ObjectIntPair.of("1_21_50", Bedrock_v766.CODEC.getProtocolVersion()), Conversion776_766::remapBlock)
+                .put(ObjectIntPair.of("1_21_60", Bedrock_v776.CODEC.getProtocolVersion()), tag -> tag)
+                .put(ObjectIntPair.of("1_21_70", Bedrock_v786.CODEC.getProtocolVersion()), tag -> tag)
+            .build();
 
         // We can keep this strong as nothing should be garbage collected
         // Safe to intern since Cloudburst NBT is immutable
@@ -245,6 +215,7 @@ public final class BlockRegistryPopulator {
             GeyserBedrockBlock airDefinition = null;
             BlockDefinition commandBlockDefinition = null;
             BlockDefinition mobSpawnerBlockDefinition = null;
+            BlockDefinition netherPortalBlockDefinition = null;
             BlockDefinition waterDefinition = null;
             BlockDefinition movingBlockDefinition = null;
             Iterator<NbtMap> blocksIterator = BLOCKS_NBT.iterator();
@@ -330,6 +301,10 @@ public final class BlockRegistryPopulator {
                     structureBlockDefinitions.put(mode.toUpperCase(Locale.ROOT), bedrockDefinition);
                 }
 
+                if (block == Blocks.NETHER_PORTAL) {
+                    netherPortalBlockDefinition = bedrockDefinition;
+                }
+
                 boolean waterlogged = blockState.getValue(Properties.WATERLOGGED, false)
                         || block == Blocks.BUBBLE_COLUMN || block == Blocks.KELP || block == Blocks.KELP_PLANT
                         || block == Blocks.SEAGRASS || block == Blocks.TALL_SEAGRASS;
@@ -357,6 +332,11 @@ public final class BlockRegistryPopulator {
                 throw new AssertionError("Unable to find mob spawner block in palette");
             }
             builder.mobSpawnerBlock(mobSpawnerBlockDefinition);
+
+            if (netherPortalBlockDefinition == null) {
+                throw new AssertionError("Unable to find nether portal block in palette");
+            }
+            builder.netherPortalBlock(netherPortalBlockDefinition);
 
             if (waterDefinition  == null) {
                 throw new AssertionError("Unable to find water in palette");

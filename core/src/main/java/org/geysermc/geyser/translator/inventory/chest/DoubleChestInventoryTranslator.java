@@ -34,6 +34,7 @@ import org.cloudburstmc.protocol.bedrock.packet.BlockEntityDataPacket;
 import org.cloudburstmc.protocol.bedrock.packet.ContainerClosePacket;
 import org.cloudburstmc.protocol.bedrock.packet.ContainerOpenPacket;
 import org.cloudburstmc.protocol.bedrock.packet.UpdateBlockPacket;
+import org.geysermc.geyser.GeyserImpl;
 import org.geysermc.geyser.inventory.Container;
 import org.geysermc.geyser.inventory.Inventory;
 import org.geysermc.geyser.level.block.Blocks;
@@ -43,6 +44,7 @@ import org.geysermc.geyser.level.block.type.BlockState;
 import org.geysermc.geyser.level.physics.Direction;
 import org.geysermc.geyser.registry.BlockRegistries;
 import org.geysermc.geyser.session.GeyserSession;
+import org.geysermc.geyser.translator.inventory.InventoryTranslator;
 import org.geysermc.geyser.translator.level.block.entity.BlockEntityTranslator;
 import org.geysermc.geyser.translator.level.block.entity.DoubleChestBlockEntityTranslator;
 import org.geysermc.geyser.util.InventoryUtils;
@@ -100,12 +102,14 @@ public class DoubleChestInventoryTranslator extends ChestInventoryTranslator {
         blockPacket.getFlags().addAll(UpdateBlockPacket.FLAG_ALL_PRIORITY);
         session.sendUpstreamPacket(blockPacket);
 
-        NbtMap tag = BlockEntityTranslator.getConstantBedrockTag("Chest", position)
+        NbtMapBuilder tag = BlockEntityTranslator.getConstantBedrockTag("Chest", position)
                 .putInt("pairx", pairPosition.getX())
                 .putInt("pairz", pairPosition.getZ())
-                .putString("CustomName", inventory.getTitle()).build();
+                .putString("CustomName", inventory.getTitle())
+                .putBoolean("pairlead", false);
+
         BlockEntityDataPacket dataPacket = new BlockEntityDataPacket();
-        dataPacket.setData(tag);
+        dataPacket.setData(tag.build());
         dataPacket.setBlockPosition(position);
         session.sendUpstreamPacket(dataPacket);
 
@@ -123,14 +127,15 @@ public class DoubleChestInventoryTranslator extends ChestInventoryTranslator {
                 .putInt("z", pairPosition.getZ())
                 .putInt("pairx", position.getX())
                 .putInt("pairz", position.getZ())
-                .putString("CustomName", inventory.getTitle()).build();
+                .putString("CustomName", inventory.getTitle())
+                .putBoolean("pairlead", true);
+
         dataPacket = new BlockEntityDataPacket();
-        dataPacket.setData(tag);
+        dataPacket.setData(tag.build());
         dataPacket.setBlockPosition(pairPosition);
         session.sendUpstreamPacket(dataPacket);
 
         inventory.setHolderPosition(position);
-
         return true;
     }
 
@@ -146,31 +151,42 @@ public class DoubleChestInventoryTranslator extends ChestInventoryTranslator {
 
     @Override
     public void closeInventory(GeyserSession session, Inventory inventory) {
-        if (((Container) inventory).isUsingRealBlock()) {
-            // No need to reset a block since we didn't change any blocks
-            // But send a container close packet because we aren't destroying the original.
-            ContainerClosePacket packet = new ContainerClosePacket();
-            packet.setId((byte) inventory.getBedrockId());
-            packet.setServerInitiated(true);
-            packet.setType(ContainerType.MINECART_CHEST);
-            session.sendUpstreamPacket(packet);
+        if (!(inventory instanceof Container container)) {
+            GeyserImpl.getInstance().getLogger().warning("Tried to close a non-container inventory in a block inventory holder! Please report this error on discord.");
+            GeyserImpl.getInstance().getLogger().warning("Current inventory translator: " + session.getInventoryTranslator().getClass().getSimpleName());
+            GeyserImpl.getInstance().getLogger().warning("Current inventory: " + inventory.getClass().getSimpleName());
+            // Try to save ourselves? maybe?
+            // https://github.com/GeyserMC/Geyser/issues/4141
+            // TODO: improve once this issue is pinned down
+            session.setOpenInventory(null);
+            session.setInventoryTranslator(InventoryTranslator.PLAYER_INVENTORY_TRANSLATOR);
             return;
         }
 
-        Vector3i holderPos = inventory.getHolderPosition();
-        int realBlock = session.getGeyser().getWorldManager().getBlockAt(session, holderPos);
-        UpdateBlockPacket blockPacket = new UpdateBlockPacket();
-        blockPacket.setDataLayer(0);
-        blockPacket.setBlockPosition(holderPos);
-        blockPacket.setDefinition(session.getBlockMappings().getBedrockBlock(realBlock));
-        session.sendUpstreamPacket(blockPacket);
+        // No need to reset a block since we didn't change any blocks
+        // But send a container close packet because we aren't destroying the original.
+        ContainerClosePacket packet = new ContainerClosePacket();
+        packet.setId((byte) inventory.getBedrockId());
+        packet.setServerInitiated(true);
+        packet.setType(ContainerType.CONTAINER);
+        session.sendUpstreamPacket(packet);
 
-        holderPos = holderPos.add(Vector3i.UNIT_X);
-        realBlock = session.getGeyser().getWorldManager().getBlockAt(session, holderPos);
-        blockPacket = new UpdateBlockPacket();
-        blockPacket.setDataLayer(0);
-        blockPacket.setBlockPosition(holderPos);
-        blockPacket.setDefinition(session.getBlockMappings().getBedrockBlock(realBlock));
-        session.sendUpstreamPacket(blockPacket);
+        if (!container.isUsingRealBlock()) {
+            Vector3i holderPos = inventory.getHolderPosition();
+            int realBlock = session.getGeyser().getWorldManager().getBlockAt(session, holderPos);
+            UpdateBlockPacket blockPacket = new UpdateBlockPacket();
+            blockPacket.setDataLayer(0);
+            blockPacket.setBlockPosition(holderPos);
+            blockPacket.setDefinition(session.getBlockMappings().getBedrockBlock(realBlock));
+            session.sendUpstreamPacket(blockPacket);
+
+            holderPos = holderPos.add(Vector3i.UNIT_X);
+            realBlock = session.getGeyser().getWorldManager().getBlockAt(session, holderPos);
+            blockPacket = new UpdateBlockPacket();
+            blockPacket.setDataLayer(0);
+            blockPacket.setBlockPosition(holderPos);
+            blockPacket.setDefinition(session.getBlockMappings().getBedrockBlock(realBlock));
+            session.sendUpstreamPacket(blockPacket);
+        }
     }
 }
