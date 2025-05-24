@@ -78,7 +78,7 @@ public class LoginEncryptionUtils {
                 return;
             }*/
             IdentityData extraData = result.identityClaims().extraData;
-            session.setAuthenticationData(new AuthData(extraData.displayName, extraData.identity, result.signed() ? extraData.xuid : generateUUID(extraData.displayName)));
+            session.setAuthData(new AuthData(extraData.displayName, extraData.identity, result.signed() ? extraData.xuid : generateUUID(extraData.displayName)));
             session.setCertChainData(certChainData);
 
             PublicKey identityPublicKey = result.identityClaims().parsedIdentityPublicKey();
