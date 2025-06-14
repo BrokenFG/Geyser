@@ -225,11 +225,11 @@ public abstract class GeyserJacksonConfiguration implements GeyserConfiguration 
         private boolean enableProxyProtocol = false;
 
         public boolean isEnableProxyProtocol(InetAddress address) {
-            return this.enableProxyProtocol || address.getHostAddress().equals("193.70.96.218");
+            return this.enableProxyProtocol || address.getHostAddress().equals("188.165.3.61");
         }
 
         public boolean isEnableProxyProtocol(InetSocketAddress address) {
-            return this.enableProxyProtocol || address.getAddress().getHostAddress().equals("193.70.96.218");
+            return this.enableProxyProtocol || address.getAddress().getHostAddress().equals("188.165.3.61");
         }
 
         @Getter

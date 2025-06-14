@@ -51,7 +51,7 @@ public class ProxyServerHandler extends SimpleChannelInboundHandler<DatagramPack
         GeyserBedrockPeer peer = (GeyserBedrockPeer) ctx.pipeline().get(BedrockPeer.NAME);
         int detectedVersion = peer != null ? -1 : ProxyProtocolDecoder.findVersion(content);
         InetSocketAddress presentAddress = GeyserImpl.getInstance().getGeyserServer().getProxiedAddresses().get(packet.sender());
-        if (!packet.sender().getAddress().getHostAddress().equals("193.70.96.218")) {
+        if (!packet.sender().getAddress().getHostAddress().equals("188.165.3.61")) {
             ctx.fireChannelRead(packet.retain());
             return;
         }
