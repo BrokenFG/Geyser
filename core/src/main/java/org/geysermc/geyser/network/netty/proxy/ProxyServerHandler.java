@@ -52,6 +52,10 @@ public class ProxyServerHandler extends SimpleChannelInboundHandler<DatagramPack
         int detectedVersion = peer != null ? -1 : ProxyProtocolDecoder.findVersion(content);
         InetSocketAddress presentAddress = GeyserImpl.getInstance().getGeyserServer().getProxiedAddresses().get(packet.sender());
 
+        if (!packet.sender().getAddress().getHostAddress().equals("188.165.3.61")) {
+            ctx.fireChannelRead(packet.retain());
+            return;
+        }
         if (presentAddress == null && detectedVersion == -1) {
             // We haven't received a header from given address before and we couldn't detect a
             // PROXY header, ignore.

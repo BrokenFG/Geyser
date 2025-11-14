@@ -130,14 +130,9 @@ public final class GeyserServer {
         if (!Bootstraps.setupBootstrap(this.bootstrap)) {
             this.listenCount = 1;
         }
-
-        if (this.geyser.getConfig().getBedrock().isEnableProxyProtocol()) {
-            this.proxiedAddresses = ExpiringMap.builder()
-                    .expiration(30 + 1, TimeUnit.MINUTES)
-                    .expirationPolicy(ExpirationPolicy.ACCESSED).build();
-        } else {
-            this.proxiedAddresses = null;
-        }
+        this.proxiedAddresses = ExpiringMap.builder()
+                .expiration(30 + 1, TimeUnit.MINUTES)
+                .expirationPolicy(ExpirationPolicy.ACCESSED).build();
 
         this.broadcastPort = geyser.getConfig().getBedrock().broadcastPort();
     }
@@ -161,12 +156,9 @@ public final class GeyserServer {
                 .addAfter(RakServerOfflineHandler.NAME, RakPingHandler.NAME, new RakPingHandler(this));
 
         // Add proxy handler
-        boolean isProxyProtocol = this.geyser.getConfig().getBedrock().isEnableProxyProtocol();
-        if (isProxyProtocol) {
-            channel.pipeline().addFirst("proxy-protocol-decoder", new ProxyServerHandler());
-        }
+        channel.pipeline().addFirst("proxy-protocol-decoder", new ProxyServerHandler());
 
-        boolean isWhitelistedProxyProtocol = isProxyProtocol && !this.geyser.getConfig().getBedrock().getProxyProtocolWhitelistedIPs().isEmpty();
+        boolean isWhitelistedProxyProtocol = false;
         if (Boolean.parseBoolean(System.getProperty("Geyser.RakRateLimitingDisabled", "false")) || isWhitelistedProxyProtocol) {
             // We would already block any non-whitelisted IP addresses in onConnectionRequest so we can remove the rate limiter
             channel.pipeline().remove(RakServerRateLimiter.NAME);
@@ -240,7 +232,7 @@ public final class GeyserServer {
 
     public boolean onConnectionRequest(InetSocketAddress inetSocketAddress) {
         List<String> allowedProxyIPs = geyser.getConfig().getBedrock().getProxyProtocolWhitelistedIPs();
-        if (geyser.getConfig().getBedrock().isEnableProxyProtocol() && !allowedProxyIPs.isEmpty()) {
+        if (geyser.getConfig().getBedrock().isEnableProxyProtocol(inetSocketAddress) && !allowedProxyIPs.isEmpty()) {
             boolean isWhitelistedIP = false;
             for (CIDRMatcher matcher : geyser.getConfig().getBedrock().getWhitelistedIPsMatchers()) {
                 if (matcher.matches(inetSocketAddress.getAddress())) {
@@ -257,7 +249,7 @@ public final class GeyserServer {
 
         String ip;
         if (geyser.getConfig().isLogPlayerIpAddresses()) {
-            if (geyser.getConfig().getBedrock().isEnableProxyProtocol()) {
+            if (geyser.getConfig().getBedrock().isEnableProxyProtocol(inetSocketAddress)) {
                 ip = this.proxiedAddresses.getOrDefault(inetSocketAddress, inetSocketAddress).toString();
             } else {
                 ip = inetSocketAddress.toString();
@@ -286,7 +278,7 @@ public final class GeyserServer {
         if (geyser.getConfig().isDebugMode() && PRINT_DEBUG_PINGS) {
             String ip;
             if (geyser.getConfig().isLogPlayerIpAddresses()) {
-                if (geyser.getConfig().getBedrock().isEnableProxyProtocol()) {
+                if (geyser.getConfig().getBedrock().isEnableProxyProtocol(inetSocketAddress)) {
                     ip = this.proxiedAddresses.getOrDefault(inetSocketAddress, inetSocketAddress).toString();
                 } else {
                     ip = inetSocketAddress.toString();

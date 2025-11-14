@@ -34,6 +34,8 @@ import org.geysermc.geyser.network.CIDRMatcher;
 import org.geysermc.geyser.network.GameProtocol;
 import org.geysermc.geyser.text.GeyserLocale;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -131,6 +133,10 @@ public interface GeyserConfiguration {
         int getCompressionLevel();
 
         boolean isEnableProxyProtocol();
+
+        boolean isEnableProxyProtocol(InetAddress address);
+
+        boolean isEnableProxyProtocol(InetSocketAddress address);
 
         List<String> getProxyProtocolWhitelistedIPs();
 

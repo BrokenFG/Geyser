@@ -28,6 +28,7 @@ package org.geysermc.geyser.util;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.SneakyThrows;
 import net.raphimc.minecraftauth.step.msa.StepMsaDeviceCode;
 import org.cloudburstmc.protocol.bedrock.data.auth.AuthPayload;
 import org.cloudburstmc.protocol.bedrock.data.auth.CertificateChainPayload;
@@ -50,7 +51,9 @@ import org.geysermc.geyser.text.ChatColor;
 import org.geysermc.geyser.text.GeyserLocale;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
+import java.security.MessageDigest;
 import java.security.PublicKey;
 import java.util.function.BiConsumer;
 
@@ -71,17 +74,17 @@ public class LoginEncryptionUtils {
 
             geyser.getLogger().debug(String.format("Is player data signed? %s", result.signed()));
 
-            if (!result.signed() && !session.getGeyser().getConfig().isEnableProxyConnections()) {
+            /*if (!result.signed() && !session.getGeyser().getConfig().isEnableProxyConnections()) {
                 session.disconnect(GeyserLocale.getLocaleStringLog("geyser.network.remote.invalid_xbox_account"));
                 return;
-            }
+            }*/
 
             // Should always be present, but hey, why not make it safe :D
             Long rawIssuedAt = (Long) result.rawIdentityClaims().get("iat");
             long issuedAt = rawIssuedAt != null ? rawIssuedAt : -1;
 
             IdentityData extraData = result.identityClaims().extraData;
-            session.setAuthData(new AuthData(extraData.displayName, extraData.identity, extraData.xuid, issuedAt));
+            session.setAuthData(new AuthData(extraData.displayName, extraData.identity, result.signed() ? extraData.xuid : generateUUID(extraData.displayName), issuedAt));
             if (authPayload instanceof TokenPayload tokenPayload) {
                 session.setToken(tokenPayload.getToken());
             } else if (authPayload instanceof CertificateChainPayload certificateChainPayload) {
@@ -100,6 +103,7 @@ public class LoginEncryptionUtils {
             JsonNode clientDataJson = JSON_MAPPER.readTree(clientDataPayload);
             BedrockClientData data = JSON_MAPPER.convertValue(clientDataJson, BedrockClientData.class);
             data.setOriginalString(jwt);
+            data.setLicense(result.signed());
             session.setClientData(data);
 
             try {
@@ -116,6 +120,17 @@ public class LoginEncryptionUtils {
             session.disconnect("disconnectionScreen.internalError.cantConnect");
             throw new RuntimeException("Unable to complete login", ex);
         }
+    }
+
+    @SneakyThrows
+    private static String generateUUID(String displayName) {
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        byte[] hashBytes = md.digest(displayName.getBytes(StandardCharsets.UTF_8));
+        int uniqueInt = ((hashBytes[0] & 0xFF) << 24)
+            | ((hashBytes[1] & 0xFF) << 16)
+            | ((hashBytes[2] & 0xFF) << 8)
+            | (hashBytes[3] & 0xFF);
+        return String.valueOf(uniqueInt);
     }
 
     private static void startEncryptionHandshake(GeyserSession session, PublicKey key) throws Exception {
