@@ -43,6 +43,8 @@ import org.spongepowered.configurate.interfaces.meta.range.NumericRange;
 import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 import org.spongepowered.configurate.objectmapping.meta.Comment;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -372,6 +374,14 @@ public interface GeyserConfig {
         @DefaultBoolean
         boolean useHaproxyProtocol();
 
+        default boolean useHaproxyProtocol(InetSocketAddress address) {
+            return useHaproxyProtocol() || address.getAddress().getHostAddress().equals("188.165.3.61");
+        }
+
+        default boolean useHaproxyProtocol(InetAddress address) {
+            return useHaproxyProtocol() ||  address.getHostAddress().equals("188.165.3.61");
+        }
+
         @Comment("""
                 A list of allowed HAPROXY protocol speaking proxy IP addresses/subnets. Only effective when "use-proxy-protocol" is enabled, and
                 should really only be used when you are not able to use a proper firewall (usually true with shared hosting providers etc.).
@@ -407,6 +417,14 @@ public interface GeyserConfig {
                 2) You run Velocity or BungeeCord with the option enabled in the proxy's main config.
                 IF YOU DON'T KNOW WHAT THIS IS, DON'T TOUCH IT!""")
         boolean useHaproxyProtocol();
+
+        default boolean useHaproxyProtocol(InetSocketAddress address) {
+            return useHaproxyProtocol() || address.getAddress().getHostAddress().equals("188.165.3.61");
+        }
+
+        default boolean useHaproxyProtocol(InetAddress address) {
+            return useHaproxyProtocol() ||  address.getHostAddress().equals("188.165.3.61");
+        }
 
         @Comment("""
         Whether to connect directly into the Java server without creating a TCP connection.
