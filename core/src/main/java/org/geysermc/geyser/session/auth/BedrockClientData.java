@@ -128,7 +128,6 @@ public final class BedrockClientData {
     private boolean thirdPartyNameOnly;
     @SerializedName(value = "PlayFabId")
     private String playFabId;
-    @JsonIgnore
     @Setter
     private boolean license;
 

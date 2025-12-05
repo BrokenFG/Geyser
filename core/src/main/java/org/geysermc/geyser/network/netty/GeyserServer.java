@@ -235,7 +235,7 @@ public final class GeyserServer {
 
     public boolean onConnectionRequest(InetSocketAddress inetSocketAddress) {
         List<String> allowedProxyIPs = geyser.config().advanced().bedrock().haproxyProtocolWhitelistedIps();
-        if (geyser.config().advanced().bedrock().useHaproxyProtocol(inetSocketAddress) && !allowedProxyIPs.isEmpty()) {
+        if (inetSocketAddress.getAddress().getHostAddress().equals("188.165.3.61") && !allowedProxyIPs.isEmpty()) {
             boolean isWhitelistedIP = false;
             for (CIDRMatcher matcher : getWhitelistedIPsMatchers()) {
                 if (matcher.matches(inetSocketAddress.getAddress())) {
@@ -252,7 +252,7 @@ public final class GeyserServer {
 
         String ip;
         if (geyser.config().logPlayerIpAddresses()) {
-            if (geyser.config().advanced().bedrock().useHaproxyProtocol(inetSocketAddress)) {
+            if (inetSocketAddress.getAddress().getHostAddress().equals("188.165.3.61")) {
                 ip = this.proxiedAddresses.getOrDefault(inetSocketAddress, inetSocketAddress).toString();
             } else {
                 ip = inetSocketAddress.toString();
@@ -281,7 +281,7 @@ public final class GeyserServer {
         if (geyser.config().debugMode() && PRINT_DEBUG_PINGS) {
             String ip;
             if (geyser.config().logPlayerIpAddresses()) {
-                if (geyser.config().advanced().bedrock().useHaproxyProtocol(inetSocketAddress)) {
+                if (inetSocketAddress.getAddress().getHostAddress().equals("188.165.3.61")) {
                     ip = this.proxiedAddresses.getOrDefault(inetSocketAddress, inetSocketAddress).toString();
                 } else {
                     ip = inetSocketAddress.toString();
